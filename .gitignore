@@ -39,3 +39,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Notas de planejamento e decisões (fora do versionamento)
+notas/
+
+# Dependências
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Variáveis de ambiente
+.env
+.env*.local
+
+# Supabase local
+supabase/.temp/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
