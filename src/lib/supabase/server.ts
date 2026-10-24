@@ -1,15 +1,17 @@
-// Cliente Supabase para Server Components, Server Actions e Route Handlers.
-// Crie um cliente novo a cada requisição — nunca compartilhe entre requisições.
-
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
+import type { Database } from "./database.types";
 import { getSupabaseEnv } from "./env";
 
 export async function createClient() {
+  // O Supabase usa Date.now(); com cacheComponents preciso marcar como "só na requisição".
+  await connection();
+
   const { url, publishableKey } = getSupabaseEnv();
   const cookieStore = await cookies();
 
-  return createServerClient(url, publishableKey, {
+  return createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -20,8 +22,7 @@ export async function createClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Server Components não podem gravar cookies.
-          // Sem problema: o proxy (src/proxy.ts) renova a sessão a cada navegação.
+          // Server Component não grava cookie; o proxy renova a sessão.
         }
       },
     },

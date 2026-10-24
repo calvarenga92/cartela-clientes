@@ -8,12 +8,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const ehRotaPublica = ROTAS_PUBLICAS.some((rota) => pathname.startsWith(rota));
 
-  // Sem login tentando acessar o app → manda para /login
   if (!user && !ehRotaPublica) {
     return redirecionar(request, response, "/login");
   }
 
-  // Já logada abrindo /login → manda para o app
   if (user && ehRotaPublica) {
     return redirecionar(request, response, "/");
   }
@@ -21,8 +19,7 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-// Redireciona preservando cookies e cabeçalhos que o Supabase acabou de definir
-// (ex.: token renovado). Sem isso, a sessão renovada se perde no redirect.
+// Copio cookies e cabeçalhos do Supabase, senão o token renovado se perde no redirect.
 function redirecionar(request: NextRequest, response: NextResponse, destino: string) {
   const url = request.nextUrl.clone();
   url.pathname = destino;
@@ -39,7 +36,6 @@ function redirecionar(request: NextRequest, response: NextResponse, destino: str
 
 export const config = {
   matcher: [
-    // Roda em tudo, exceto arquivos estáticos e imagens
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

@@ -20,7 +20,7 @@ export async function entrar(_estadoAnterior: LoginState, formData: FormData): P
   const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
 
   if (error) {
-    // Mensagem genérica de propósito: não revela se o e-mail existe
+    // Mensagem genérica para não revelar se o e-mail existe.
     return { erro: "E-mail ou senha incorretos.", email };
   }
 

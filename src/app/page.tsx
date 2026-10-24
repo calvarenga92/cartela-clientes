@@ -1,20 +1,41 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { getSessao } from "@/lib/auth";
+import { BuscaClientes } from "./busca-clientes";
+import { ListaClientes, ListaClientesCarregando } from "./lista-clientes";
 import { sair } from "./login/actions";
 
-export default function Home() {
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-6">
-      {/* Lê a sessão (cookies): fica dentro do Suspense por causa do cacheComponents */}
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-4 pt-6 pb-28">
       <Suspense fallback={<CabecalhoCarregando />}>
         <Cabecalho />
       </Suspense>
 
-      <section className="mt-10 rounded-2xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
-        Em breve: busca de clientes e registro de atendimento.
-      </section>
+      <Suspense fallback={<div className="h-12 rounded-xl bg-stone-100 dark:bg-stone-900" />}>
+        <BuscaClientes />
+      </Suspense>
+
+      <Suspense fallback={<ListaClientesCarregando />}>
+        <Resultados searchParams={searchParams} />
+      </Suspense>
+
+      <div className="fixed inset-x-0 bottom-0 border-t border-stone-200 bg-background/90 px-4 py-4 backdrop-blur dark:border-stone-800">
+        <Link
+          href="/clientes/nova"
+          className="mx-auto flex h-12 w-full max-w-md items-center justify-center rounded-xl bg-rose-600 text-base font-semibold text-white transition hover:bg-rose-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+        >
+          + Nova cliente
+        </Link>
+      </div>
     </main>
   );
+}
+
+async function Resultados({ searchParams }: { searchParams: PageProps<"/">["searchParams"] }) {
+  const { q } = await searchParams;
+  const termo = typeof q === "string" ? q : "";
+  return <ListaClientes termo={termo} />;
 }
 
 async function Cabecalho() {

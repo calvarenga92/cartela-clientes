@@ -1,6 +1,3 @@
-// Lê e valida as variáveis de ambiente do Supabase.
-// Falha cedo, com mensagem clara, em vez de quebrar depois com "Invalid URL".
-
 export function getSupabaseEnv() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
