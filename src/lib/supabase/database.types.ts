@@ -39,6 +39,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          criado_em: string
+          user_id: string
+        }
+        Insert: {
+          criado_em?: string
+          user_id: string
+        }
+        Update: {
+          criado_em?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       carimbos: {
         Row: {
           cancelado_em: string | null
@@ -164,6 +179,7 @@ export type Database = {
           observacoes: string | null
           salao_id: string
           telefone: string
+          token_publico: string
         }
         Insert: {
           aniversario?: string | null
@@ -176,6 +192,7 @@ export type Database = {
           observacoes?: string | null
           salao_id: string
           telefone: string
+          token_publico?: string
         }
         Update: {
           aniversario?: string | null
@@ -188,6 +205,7 @@ export type Database = {
           observacoes?: string | null
           salao_id?: string
           telefone?: string
+          token_publico?: string
         }
         Relationships: [
           {
@@ -288,6 +306,42 @@ export type Database = {
           },
         ]
       }
+      solicitacoes_acesso: {
+        Row: {
+          criado_em: string
+          decidido_em: string | null
+          decidido_por: string | null
+          email: string
+          id: string
+          nome: string
+          nome_salao: string
+          status: string
+          telefone: string
+        }
+        Insert: {
+          criado_em?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          email: string
+          id?: string
+          nome: string
+          nome_salao: string
+          status?: string
+          telefone: string
+        }
+        Update: {
+          criado_em?: string
+          decidido_em?: string | null
+          decidido_por?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          nome_salao?: string
+          status?: string
+          telefone?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -349,11 +403,35 @@ export type Database = {
           telefone: string
         }[]
       }
+      cartela_publica: { Args: { p_token: string }; Returns: Json }
+      concluir_aprovacao: {
+        Args: { p_admin_id: string; p_solicitacao_id: string }
+        Returns: string
+      }
       conceder_carimbo: {
         Args: { p_cliente_id: string; p_motivo: string }
         Returns: Json
       }
+      eh_admin: { Args: never; Returns: boolean }
+      listar_solicitacoes: {
+        Args: never
+        Returns: {
+            criado_em: string
+            decidido_em: string | null
+            decidido_por: string | null
+            email: string
+            id: string
+            nome: string
+            nome_salao: string
+            status: string
+            telefone: string
+        }[]
+      }
       desfazer_visita: { Args: { p_visita_id: string }; Returns: Json }
+      recusar_solicitacao: {
+        Args: { p_solicitacao_id: string }
+        Returns: undefined
+      }
       registrar_visita: {
         Args: {
           p_chave_idempotencia?: string
@@ -368,6 +446,15 @@ export type Database = {
         Returns: Json
       }
       sem_acento: { Args: { texto: string }; Returns: string }
+      solicitar_acesso: {
+        Args: {
+          p_email: string
+          p_nome: string
+          p_nome_salao: string
+          p_telefone: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

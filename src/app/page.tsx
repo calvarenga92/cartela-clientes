@@ -39,7 +39,7 @@ async function Resultados({ searchParams }: { searchParams: PageProps<"/">["sear
 }
 
 async function Cabecalho() {
-  const { email, salao } = await getSessao();
+  const { email, salao, admin } = await getSessao();
 
   return (
     <header className="flex items-start justify-between gap-4">
@@ -50,14 +50,24 @@ async function Cabecalho() {
         <p className="truncate text-sm text-stone-600 dark:text-stone-400">{email}</p>
       </div>
 
-      <form action={sair}>
-        <button
-          type="submit"
-          className="h-11 shrink-0 rounded-xl border border-stone-300 px-4 text-sm font-medium transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:border-stone-700 dark:hover:bg-stone-800"
-        >
-          Sair
-        </button>
-      </form>
+      <div className="flex shrink-0 gap-2">
+        {admin && (
+          <Link
+            href="/admin"
+            className="flex h-11 items-center rounded-xl border border-stone-300 px-4 text-sm font-medium transition hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800"
+          >
+            Admin
+          </Link>
+        )}
+        <form action={sair}>
+          <button
+            type="submit"
+            className="h-11 rounded-xl border border-stone-300 px-4 text-sm font-medium transition hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:border-stone-700 dark:hover:bg-stone-800"
+          >
+            Sair
+          </button>
+        </form>
+      </div>
     </header>
   );
 }

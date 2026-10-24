@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
 
-const ROTAS_PUBLICAS = ["/login"];
+// Públicas: abrem sem login. Só deslogado: quem já entrou é mandado para o app.
+const ROTAS_PUBLICAS = ["/login", "/primeiro-acesso", "/auth/", "/c/"];
+const ROTAS_SO_DESLOGADO = ["/login", "/primeiro-acesso"];
 
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
@@ -12,7 +14,7 @@ export async function proxy(request: NextRequest) {
     return redirecionar(request, response, "/login");
   }
 
-  if (user && ehRotaPublica) {
+  if (user && ROTAS_SO_DESLOGADO.some((rota) => pathname.startsWith(rota))) {
     return redirecionar(request, response, "/");
   }
 
@@ -36,6 +38,6 @@ function redirecionar(request: NextRequest, response: NextResponse, destino: str
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

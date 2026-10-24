@@ -16,6 +16,8 @@ export type FichaCliente = {
   nome: string;
   telefone: string;
   email: string | null;
+  tokenPublico: string;
+  salaoNome: string;
   indicadora: { id: string; nome: string } | null;
   cartela: {
     meta: number;
@@ -37,15 +39,18 @@ export async function buscarClientes(termo: string): Promise<ClienteResumo[]> {
 export async function getFichaCliente(id: string): Promise<FichaCliente | null> {
   const supabase = await createClient();
 
-  const { data: cliente } = await supabase
+  const { data: cliente, error } = await supabase
     .from("clientes")
-    .select("id, nome, telefone, email, indicadora:clientes!clientes_indicada_por_id_fkey(id, nome)")
+    .select("id, nome, telefone, email, token_publico, indicada_por_id, salao:saloes(nome)")
     .eq("id", id)
     .maybeSingle();
 
+  // Erro de banco não pode virar 404: deixo estourar com a mensagem.
+  if (error) throw new Error(`Erro ao carregar cliente: ${error.message}`);
   if (!cliente) return null;
 
-  const [cartelasResp, visitasResp] = await Promise.all([
+  // Indicadora em consulta separada: o auto-relacionamento é ambíguo para o embed.
+  const [cartelasResp, visitasResp, indicadoraResp] = await Promise.all([
     supabase
       .from("cartelas")
       .select("id, status, meta_carimbos, criado_em, carimbos(id, origem, criado_em, cancelado_em)")
@@ -59,7 +64,13 @@ export async function getFichaCliente(id: string): Promise<FichaCliente | null> 
       .is("cancelada_em", null)
       .order("criado_em", { ascending: false })
       .limit(10),
+    cliente.indicada_por_id
+      ? supabase.from("clientes").select("id, nome").eq("id", cliente.indicada_por_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
+
+  const erroConsulta = cartelasResp.error ?? visitasResp.error ?? indicadoraResp.error;
+  if (erroConsulta) throw new Error(`Erro ao carregar ficha: ${erroConsulta.message}`);
 
   const cartelas = cartelasResp.data ?? [];
   const aberta = cartelas.find((c) => c.status === "aberta");
@@ -77,8 +88,9 @@ export async function getFichaCliente(id: string): Promise<FichaCliente | null> 
     nome: cliente.nome,
     telefone: cliente.telefone,
     email: cliente.email,
-    // O tipo gerado declara lista no auto-relacionamento, mas vem objeto.
-    indicadora: Array.isArray(cliente.indicadora) ? (cliente.indicadora[0] ?? null) : cliente.indicadora,
+    tokenPublico: cliente.token_publico,
+    salaoNome: cliente.salao?.nome ?? "",
+    indicadora: indicadoraResp.data,
     cartela: { meta: atual?.meta_carimbos ?? META_PADRAO, carimbos },
     premioCartelaId: completa?.id ?? null,
     visitas: (visitasResp.data ?? []).map((v) => ({

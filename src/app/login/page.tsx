@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { AvisoLink } from "./aviso-link";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -15,7 +18,16 @@ export default function LoginPage() {
             Entre para registrar atendimentos.
           </p>
         </div>
+        <Suspense fallback={null}>
+          <AvisoLink />
+        </Suspense>
         <LoginForm />
+        <p className="mt-6 text-center text-sm text-stone-600 dark:text-stone-400">
+          Primeiro acesso?{" "}
+          <Link href="/primeiro-acesso" className="font-semibold text-rose-700 dark:text-rose-400">
+            Peça aqui
+          </Link>
+        </p>
       </div>
     </main>
   );
