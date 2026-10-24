@@ -86,41 +86,8 @@ async function Ficha({ params }: { params: PageProps<"/clientes/[id]">["params"]
       >
         Enviar cartela no WhatsApp
       </a>
-
-      <section aria-labelledby="historico">
-        <h2 id="historico" className="mb-2 text-sm font-medium text-stone-600 dark:text-stone-400">
-          Últimas visitas
-        </h2>
-        {ficha.visitas.length === 0 ? (
-          <p className="text-sm text-stone-500">Nenhuma visita ainda.</p>
-        ) : (
-          <ul className="divide-y divide-stone-200 rounded-2xl border border-stone-200 dark:divide-stone-800 dark:border-stone-800">
-            {ficha.visitas.map((v) => (
-              <li key={v.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                <span>{formatarData(v.data)}</span>
-                {v.tipo === "premio" ? (
-                  <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 dark:bg-rose-950 dark:text-rose-300">
-                    Prêmio
-                  </span>
-                ) : (
-                  <span className="text-stone-500">Atendimento</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </>
   );
-}
-
-// Uso meio-dia para o fuso não voltar a data um dia.
-function formatarData(data: string) {
-  return new Date(`${data}T12:00:00`).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 function FichaCarregando() {

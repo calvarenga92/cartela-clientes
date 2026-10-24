@@ -224,6 +224,69 @@ export type Database = {
           },
         ]
       }
+      cupom_usos: {
+        Row: {
+          cancelado_em: string | null
+          cupom_id: string
+          id: string
+          salao_id: string
+          usado_em: string
+        }
+        Insert: {
+          cancelado_em?: string | null
+          cupom_id: string
+          id?: string
+          salao_id: string
+          usado_em?: string
+        }
+        Update: {
+          cancelado_em?: string | null
+          cupom_id?: string
+          id?: string
+          salao_id?: string
+          usado_em?: string
+        }
+        Relationships: []
+      }
+      cupons: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          criado_em: string
+          descricao: string | null
+          id: string
+          limite_usos: number | null
+          salao_id: string
+          tipo: string
+          validade: string | null
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          limite_usos?: number | null
+          salao_id: string
+          tipo: string
+          validade?: string | null
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          limite_usos?: number | null
+          salao_id?: string
+          tipo?: string
+          validade?: string | null
+          valor?: number
+        }
+        Relationships: []
+      }
       saloes: {
         Row: {
           criado_em: string
@@ -427,7 +490,46 @@ export type Database = {
             telefone: string
         }[]
       }
+      desfazer_uso_cupom: { Args: { p_uso_id: string }; Returns: undefined }
+      listar_cupons: {
+        Args: never
+        Returns: {
+          ativo: boolean
+          codigo: string
+          criado_em: string
+          descricao: string
+          id: string
+          limite_usos: number
+          tipo: string
+          usos: number
+          validade: string
+          valor: number
+        }[]
+      }
       desfazer_visita: { Args: { p_visita_id: string }; Returns: Json }
+      clientes_para_reativar: {
+        Args: { p_dias?: number }
+        Returns: {
+          carimbos: number
+          dias_sem_vir: number
+          id: string
+          meta_carimbos: number
+          nome: string
+          premio_disponivel: boolean
+          telefone: string
+          token_publico: string
+          ultima_visita: string | null
+          ultimo_contato: string | null
+        }[]
+      }
+      registrar_contato_reativacao: {
+        Args: { p_cliente_id: string; p_cupom_id?: string }
+        Returns: undefined
+      }
+      resumo_reativacao: {
+        Args: { p_janela?: number }
+        Returns: { chamadas: number; voltaram: number }[]
+      }
       recusar_solicitacao: {
         Args: { p_solicitacao_id: string }
         Returns: undefined
@@ -445,6 +547,7 @@ export type Database = {
         Args: { p_cartela_id: string; p_data?: string; p_servico?: string }
         Returns: Json
       }
+      usar_cupom: { Args: { p_codigo: string }; Returns: Json }
       sem_acento: { Args: { texto: string }; Returns: string }
       solicitar_acesso: {
         Args: {

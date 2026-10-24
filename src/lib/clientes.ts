@@ -21,10 +21,15 @@ export type FichaCliente = {
   indicadora: { id: string; nome: string } | null;
   cartela: {
     meta: number;
-    carimbos: { id: string; origem: OrigemCarimbo }[];
+    carimbos: {
+      id: string;
+      origem: OrigemCarimbo;
+      criadoEm: string;
+      indicadaNome: string | null;
+      motivo: string | null;
+    }[];
   };
   premioCartelaId: string | null;
-  visitas: { id: string; data: string; tipo: "normal" | "premio" }[];
 };
 
 const META_PADRAO = 10;
@@ -50,26 +55,19 @@ export async function getFichaCliente(id: string): Promise<FichaCliente | null> 
   if (!cliente) return null;
 
   // Indicadora em consulta separada: o auto-relacionamento é ambíguo para o embed.
-  const [cartelasResp, visitasResp, indicadoraResp] = await Promise.all([
+  const [cartelasResp, indicadoraResp] = await Promise.all([
     supabase
       .from("cartelas")
-      .select("id, status, meta_carimbos, criado_em, carimbos(id, origem, criado_em, cancelado_em)")
+      .select("id, status, meta_carimbos, criado_em, carimbos(id, origem, criado_em, cancelado_em, motivo, visita:visitas(cliente:clientes(nome)))")
       .eq("cliente_id", id)
       .in("status", ["aberta", "completa"])
       .order("criado_em", { ascending: true }),
-    supabase
-      .from("visitas")
-      .select("id, data, tipo")
-      .eq("cliente_id", id)
-      .is("cancelada_em", null)
-      .order("criado_em", { ascending: false })
-      .limit(10),
     cliente.indicada_por_id
       ? supabase.from("clientes").select("id, nome").eq("id", cliente.indicada_por_id).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
   ]);
 
-  const erroConsulta = cartelasResp.error ?? visitasResp.error ?? indicadoraResp.error;
+  const erroConsulta = cartelasResp.error ?? indicadoraResp.error;
   if (erroConsulta) throw new Error(`Erro ao carregar ficha: ${erroConsulta.message}`);
 
   const cartelas = cartelasResp.data ?? [];
@@ -81,7 +79,14 @@ export async function getFichaCliente(id: string): Promise<FichaCliente | null> 
   const carimbos = (atual?.carimbos ?? [])
     .filter((c) => c.cancelado_em === null)
     .sort((a, b) => a.criado_em.localeCompare(b.criado_em))
-    .map((c) => ({ id: c.id, origem: c.origem as OrigemCarimbo }));
+    .map((c) => ({
+      id: c.id,
+      origem: c.origem as OrigemCarimbo,
+      criadoEm: c.criado_em,
+      // No carimbo de indicação, a visita é da indicada: é o nome dela que mostro.
+      indicadaNome: c.origem === "indicacao" ? (c.visita?.cliente?.nome ?? null) : null,
+      motivo: c.motivo,
+    }));
 
   return {
     id: cliente.id,
@@ -93,10 +98,5 @@ export async function getFichaCliente(id: string): Promise<FichaCliente | null> 
     indicadora: indicadoraResp.data,
     cartela: { meta: atual?.meta_carimbos ?? META_PADRAO, carimbos },
     premioCartelaId: completa?.id ?? null,
-    visitas: (visitasResp.data ?? []).map((v) => ({
-      id: v.id,
-      data: v.data,
-      tipo: v.tipo as "normal" | "premio",
-    })),
   };
 }
